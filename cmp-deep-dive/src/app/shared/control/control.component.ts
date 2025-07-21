@@ -1,4 +1,10 @@
-import { Component, input } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  inject,
+  input,
+  ViewEncapsulation,
+} from '@angular/core';
 
 @Component({
   selector: 'app-control',
@@ -6,7 +12,17 @@ import { Component, input } from '@angular/core';
   imports: [],
   templateUrl: './control.component.html',
   styleUrl: './control.component.css',
+  encapsulation: ViewEncapsulation.None,
+  host: {
+    class: 'control',
+    '(click)': 'onClick()',
+  },
 })
 export class ControlComponent {
   label = input.required<string>();
+  private readonly el = inject(ElementRef);
+
+  onClick() {
+    console.log('printing host element programatically', this.el);
+  }
 }
