@@ -1,7 +1,6 @@
 import {
   Component,
   contentChild,
-  ContentChild,
   ElementRef,
   inject,
   input,
