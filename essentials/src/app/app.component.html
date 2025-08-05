@@ -2,12 +2,12 @@
 
 <main>
   <ul id="users">
-    @for (user of users; track user.id) {
+    @for (user of users$ | async; track user.id) {
     <li>
       <app-user
         [user]="user"
-        [selected]="user.id === selectedUserId"
-        (select)="onSelectUser($event)"
+        [selected]="user.id === selectedUser?.id"
+        (select)="onSelectUser(user)"
       />
     </li>
     }
