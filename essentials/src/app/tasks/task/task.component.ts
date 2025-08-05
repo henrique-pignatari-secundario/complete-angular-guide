@@ -1,6 +1,6 @@
 import { Component, inject, Input } from '@angular/core';
-import { TasksService } from '../../services/tasks.service';
 import { Task } from '../../core/models/task.model';
+import { TasksService } from '../../core/services/tasks.service';
 
 @Component({
   selector: 'app-task',
@@ -12,6 +12,6 @@ export class TaskComponent {
   private readonly tasksService = inject(TasksService);
 
   onCompleteTask() {
-    this.tasksService.removeTask(this.task.id);
+    this.tasksService.completeTask(this.task.id);
   }
 }

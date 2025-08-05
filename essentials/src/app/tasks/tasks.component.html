@@ -11,7 +11,7 @@
   </header>
 
   <ul>
-    @for(task of selectedUserTasks; track task.id){
+    @for(task of tasks$ | async; track task.id){
     <li>
       <app-task [task]="task" />
     </li>
