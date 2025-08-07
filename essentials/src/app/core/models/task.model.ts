@@ -6,7 +6,7 @@ export interface Task {
   dueDate: string;
 }
 
-export interface NewTaskData {
+export interface NewTaskFormData {
   title: string;
   summary: string;
   date: string;

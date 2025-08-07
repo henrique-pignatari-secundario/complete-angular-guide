@@ -1,5 +1,12 @@
-import { Component, inject, Input } from '@angular/core';
-import { TasksService } from './tasks.service';
+import {
+  Component,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  Input,
+} from '@angular/core';
+import { TasksService } from '../core/services/tasks.service';
 
 @Component({
   selector: 'app-tasks',
@@ -7,14 +14,20 @@ import { TasksService } from './tasks.service';
   styleUrl: './tasks.component.css',
 })
 export class TasksComponent {
-  @Input({ required: true }) userId!: string;
+  userId = input.required<string>();
   @Input({ required: true }) name!: string;
   private readonly tasksService = inject(TasksService);
-
+  private readonly destroyRef = inject(DestroyRef);
+  tasks = this.tasksService.loadedTasks;
   isAddingTask: boolean = false;
 
-  get selectedUserTasks() {
-    return this.tasksService.getUserTasks(this.userId);
+  constructor() {
+    effect(() => {
+      const subscription = this.tasksService
+        .getOpenTasksByUserId(this.userId())
+        .subscribe();
+      this.destroyRef.onDestroy(() => subscription.unsubscribe());
+    });
   }
 
   onStartAddTask() {

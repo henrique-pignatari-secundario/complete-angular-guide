@@ -1,6 +1,6 @@
-import { Component, inject, Input } from '@angular/core';
-import { TasksService } from '../tasks.service';
-import { Task } from './task.model';
+import { Component, DestroyRef, inject, Input } from '@angular/core';
+import { Task } from '../../core/models/task.model';
+import { TasksService } from '../../core/services/tasks.service';
 
 @Component({
   selector: 'app-task',
@@ -10,8 +10,15 @@ import { Task } from './task.model';
 export class TaskComponent {
   @Input({ required: true }) task!: Task;
   private readonly tasksService = inject(TasksService);
+  private readonly destroyRef = inject(DestroyRef);
 
   onCompleteTask() {
-    this.tasksService.removeTask(this.task.id);
+    const subscription = this.tasksService
+      .completeTask(this.task.id, this.task.userId)
+      .subscribe();
+
+    this.destroyRef.onDestroy(() => {
+      subscription.unsubscribe();
+    });
   }
 }

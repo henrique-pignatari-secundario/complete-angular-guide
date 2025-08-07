@@ -1,20 +1,33 @@
-import { Component } from '@angular/core';
-import { DUMMY_USERS } from './dummy-users';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Observable } from 'rxjs';
+import { User } from './core/models/user.model';
+import { UsersService } from './core/services/users.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
-export class AppComponent {
-  users = DUMMY_USERS;
-  selectedUserId?: string;
+export class AppComponent implements OnInit {
+  private readonly usersService: UsersService;
+  private readonly destroyRef = inject(DestroyRef);
+  users = signal<User[]>([]);
+  selectedUser?: User;
 
-  get selectedUser() {
-    return this.users.find((user) => user.id === this.selectedUserId);
+  constructor(usersService: UsersService) {
+    this.usersService = usersService;
   }
 
-  onSelectUser(id: string) {
-    this.selectedUserId = id;
+  ngOnInit(): void {
+    const subscription = this.usersService.getAllUsers().subscribe({
+      next: (users) => {
+        this.users.set(users);
+      },
+    });
+    this.destroyRef.onDestroy(() => subscription.unsubscribe());
+  }
+
+  onSelectUser(user: User) {
+    this.selectedUser = user;
   }
 }
