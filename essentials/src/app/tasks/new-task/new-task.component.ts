@@ -1,4 +1,11 @@
-import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  EventEmitter,
+  inject,
+  Input,
+  Output,
+} from '@angular/core';
 import { TasksService } from '../../core/services/tasks.service';
 import { Subject, switchMap, tap } from 'rxjs';
 import { NewTaskFormData } from '../../core/models/task.model';
@@ -9,15 +16,11 @@ import { NewTaskFormData } from '../../core/models/task.model';
   styleUrl: './new-task.component.css',
 })
 export class NewTaskComponent {
+  private readonly tasksService = inject(TasksService);
+  private readonly destroyRef = inject(DestroyRef);
+
   @Input({ required: true }) userId!: string;
   @Output() close = new EventEmitter<void>();
-  private readonly tasksService = inject(TasksService);
-  private submitSubject = new Subject<NewTaskFormData>();
-
-  submitResult$ = this.submitSubject.pipe(
-    switchMap((taskData) => this.tasksService.addTask(taskData, this.userId)),
-    tap(() => this.close.emit())
-  );
 
   enteredTitle = '';
   enteredSummary = '';
@@ -28,10 +31,19 @@ export class NewTaskComponent {
   }
 
   onSubmit() {
-    this.submitSubject.next({
-      title: this.enteredTitle,
-      summary: this.enteredSummary,
-      date: this.enteredDate,
+    const subscription = this.tasksService
+      .addTask(
+        {
+          title: this.enteredTitle,
+          summary: this.enteredSummary,
+          date: this.enteredDate,
+        },
+        this.userId
+      )
+      .subscribe(() => this.close.emit());
+
+    this.destroyRef.onDestroy(() => {
+      subscription.unsubscribe();
     });
   }
 }

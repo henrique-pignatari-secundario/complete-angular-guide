@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { Observable } from 'rxjs';
 import { User } from './core/models/user.model';
 import { UsersService } from './core/services/users.service';
@@ -10,7 +10,8 @@ import { UsersService } from './core/services/users.service';
 })
 export class AppComponent implements OnInit {
   private readonly usersService: UsersService;
-  users$!: Observable<User[]>;
+  private readonly destroyRef = inject(DestroyRef);
+  users = signal<User[]>([]);
   selectedUser?: User;
 
   constructor(usersService: UsersService) {
@@ -18,7 +19,12 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.users$ = this.usersService.getAllUsers();
+    const subscription = this.usersService.getAllUsers().subscribe({
+      next: (users) => {
+        this.users.set(users);
+      },
+    });
+    this.destroyRef.onDestroy(() => subscription.unsubscribe());
   }
 
   onSelectUser(user: User) {

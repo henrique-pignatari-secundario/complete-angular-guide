@@ -1,6 +1,11 @@
-import { Component, inject, Input, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
-import { Task } from '../core/models/task.model';
+import {
+  Component,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  Input,
+} from '@angular/core';
 import { TasksService } from '../core/services/tasks.service';
 
 @Component({
@@ -8,16 +13,21 @@ import { TasksService } from '../core/services/tasks.service';
   templateUrl: './tasks.component.html',
   styleUrl: './tasks.component.css',
 })
-export class TasksComponent implements OnInit {
-  @Input({ required: true }) userId!: string;
+export class TasksComponent {
+  userId = input.required<string>();
   @Input({ required: true }) name!: string;
   private readonly tasksService = inject(TasksService);
-  tasks$!: Observable<Task[]>;
-
+  private readonly destroyRef = inject(DestroyRef);
+  tasks = this.tasksService.loadedTasks;
   isAddingTask: boolean = false;
 
-  ngOnInit(): void {
-    this.tasks$ = this.tasksService.getTasksByUserId(this.userId);
+  constructor() {
+    effect(() => {
+      const subscription = this.tasksService
+        .getOpenTasksByUserId(this.userId())
+        .subscribe();
+      this.destroyRef.onDestroy(() => subscription.unsubscribe());
+    });
   }
 
   onStartAddTask() {
